@@ -20,7 +20,7 @@ def clean_data(df):
     '''
     # split "categories" column into separate columns and save as a new dataframe
     category_names = [segment.split('-')[0] for segment in df["categories"][0].split(';')]
-    df_splitted = df["categories"].str.split(';', expand = True).applymap(lambda x:int(x.split('-')[1]))
+    df_splitted = df["categories"].str.split(';', expand = True).applymap(lambda x:int(x.split('-')[1]!='0'))
     df_splitted.columns = category_names
 
     # drop the original "categories" column 
