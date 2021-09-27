@@ -5,7 +5,12 @@ from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
     '''
-    load message and category dataset and merge them
+    Load message and category dataset and merge them into one dataframe
+    Args: 
+        messages_filepath (str): path and filename of the message dataset
+        categories_filepath (str): path and filename of the category dataset
+    Returns:
+        df (pd dataframe): merged dataframe
     '''
     df_messages = pd.read_csv(messages_filepath)
     df_categories = pd.read_csv(categories_filepath)
@@ -15,8 +20,12 @@ def load_data(messages_filepath, categories_filepath):
 
 def clean_data(df):
     '''
-    process "categories" column by splitting it into seperate columns; 
-    remove duplicated rows
+    Clean the merged dataframe by splitting the "categories" column into 36 binary columns, 
+    each representing a class; removing duplicated rows
+    Args: 
+        df (pd dataframe): merged dataframe
+    Returns:
+        df_nodup (pd dataframe): cleaned dataframe
     '''
     # split "categories" column into separate columns and save as a new dataframe
     category_names = [segment.split('-')[0] for segment in df["categories"][0].split(';')]
@@ -36,13 +45,22 @@ def clean_data(df):
 
 def save_data(df, database_filename):
     '''
-    save the cleaned dataset into an sqlite database
+    Save the cleaned dataset into an sqlite database
+    Args: 
+        df (pd dataframe): cleaned dataframe
+        database_filename (str): path and name of the sqlite database
+    Returns:
+        None
     '''
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('messages', engine, if_exists = 'replace', index = False)
 
 
 def main():
+    '''
+    Load and merge csv dataset, clean the dataset, and save the cleaned dataset 
+    to sqlite database
+    '''
     if len(sys.argv) == 4:
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
         # load data

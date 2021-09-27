@@ -22,6 +22,15 @@ import pickle
 
 
 def load_data(database_filepath):
+    '''
+    Load the data from the database and split it into X and Y
+    Args:
+        database_filepath (str): filepath of the sql database 
+    Returns:
+        X (numpy arr): feature vectors
+        Y (numpy arr): multi-label vector output
+        category_names (list of str): class names
+    '''
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql('SELECT * FROM messages', engine)
     X = df['message'].values
@@ -37,13 +46,15 @@ def load_data(database_filepath):
     Y = df[category_names].values
     return X, Y, category_names
 
+
 def tokenize(text):
     '''
-    Tokenize the text. Steps include puctuation removal, normalization, split, lemmatization, stemming, stop words removal
+    Tokenize the text by removing puctuation, normalizing case, splitting by space, removing stop words, 
+    lemmatizing, and stemming
     Args:
-        text : A message that needs preprocessing
+        text (str): a message 
     Returns:
-        Removed punctation, lower cased all letters, removed stopwords, lemmatized and stemmed all words.
+        tokens (list of str): tokens
     '''
     # replace punctuations with space and normalize all letters
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
@@ -60,6 +71,15 @@ def tokenize(text):
 
 
 def build_model():
+    '''
+    Build a multi-label classification model. 
+    Optimize the hyperparameters with grid search and cross-validation
+    Args: 
+        None
+    Returns:
+        model (GridSearchCV): an ML model for multi-label classification
+    '''
+
     '''
     pipeline = Pipeline([
                         ('feat_union', FeatureUnion([
@@ -100,6 +120,18 @@ def build_model():
 
 
 def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
+    '''
+    Evaluate the multi-label classification model in terms of multi-label accuracy and f1-score
+    Args: 
+        model (sklearn): an ML model
+        X_train (numpy arr): training vector
+        Y_train (numpy arr): target vector relative to X_train
+        X_test (numpy arr): testing vector
+        Y_test (numpy arr): target vector relative to X_test
+        category_names (list of str): class names
+    Returns:
+        None
+    '''
     Y_pred = model.predict(X_test)
     Y_train_pred = model.predict(X_train)   
      
@@ -115,10 +147,22 @@ def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
+    '''
+    Save the trained model as a pickle file
+    Args: 
+        model (sklearn): an ML model
+        model_filepath (str): path and pickle filename for saving the model
+    Returns:
+        None
+    '''
     pickle.dump(model, open(model_filepath, "wb"))
 
 
 def main():
+    '''
+    Load spl dataset; split the data into training and testing; build and train a model; 
+    evaluate the model using various metrics; save the model as a pickle file
+    '''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
