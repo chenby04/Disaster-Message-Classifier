@@ -1,64 +1,62 @@
 import sys
 import pandas as pd
 from sqlalchemy import create_engine
+import re
+
 import nltk
-from nltk.tokenize import word_tokenize, RegexpTokenizer
+from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk import pos_tag
 from nltk.stem import WordNetLemmatizer
+from nltk.stem.porter import PorterStemmer
 nltk.download(['punkt', 'wordnet','averaged_perceptron_tagger','stopwords'])
+
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, f1_score
+
+import pickle
 
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql('SELECT * FROM messages', engine)
     X = df['message'].values
+    # 'child_alone' not included in category_names becuase it is all-zero and therefore invalid for training
     category_names = ['related', 'request', 'offer', 'aid_related', 'medical_help', \
                     'medical_products', 'search_and_rescue', 'security', 'military', \
-                    'child_alone', 'water', 'food', 'shelter', 'clothing', 'money', \
+                    'water', 'food', 'shelter', 'clothing', 'money', \
                     'missing_people', 'refugees', 'death', 'other_aid', \
                     'infrastructure_related', 'transport', 'buildings', 'electricity', \
                     'tools', 'hospitals', 'shops', 'aid_centers', 'other_infrastructure', \
                     'weather_related', 'floods', 'storm', 'fire', 'earthquake', 'cold', \
-                    'other_weather', 'direct_report']
+                    'other_weather', 'direct_report'] 
     Y = df[category_names].values
     return X, Y, category_names
 
-
 def tokenize(text):
-    # normalize, split, and remove punctuations
-    words = RegexpTokenizer(r'\w+').tokenize(text.lower())
-     
-    # filter out stopwords
-    stopwords_set = set(stopwords.words("english"))
-    words_stop = [word for word in words if word not in stopwords_set]
-     
-    return words_stop
-
-
-def tokenize_w_lem(text):
-    # normalize, split, and remove punctuations
-    words = RegexpTokenizer(r'\w+').tokenize(text.lower())
+    '''
+    Tokenize the text. Steps include puctuation removal, normalization, split, lemmatization, stemming, stop words removal
+    Args:
+        text : A message that needs preprocessing
+    Returns:
+        Removed punctation, lower cased all letters, removed stopwords, lemmatized and stemmed all words.
+    '''
+    # replace punctuations with space and normalize all letters
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     
-    # part-of-speech tagging
-    words_pos = pos_tag(words)
+    # tokenize 
+    tokens = word_tokenize(text)  
     
-    # filter out stopwords
-    stopwords_set = set(stopwords.words("english"))
-    words_stop = [(word,p) for word,p in words_pos if word not in stopwords_set]
-    
-    # lemmatize verb and noun
+    # lemmatize, stem and remove stop words
+    stop_words = stopwords.words("english")
     lemmatizer = WordNetLemmatizer()
-    words_lem = [(lemmatizer.lemmatize(word, pos = 'v' if p.startswith('VB') else 'n'), p) for word, p in words_stop]
-    
-    words_final = [word+'_'+p for word,p in words_lem] 
-    return words_final
+    stemmer = PorterStemmer()
+    tokens = [stemmer.stem(lemmatizer.lemmatize(word)) for word in tokens if word not in stop_words]
+    return tokens
 
 
 def build_model():
@@ -77,36 +75,47 @@ def build_model():
         'feat_union__vect__tokenizer': (tokenize, tokenize_w_lem)        
     }
     '''
-    
-    pipeline = Pipeline([('vect', CountVectorizer()),
+    svm = SVC()   
+    pipeline = Pipeline([
+                          ('vect', CountVectorizer()),
                           ('tfidf', TfidfTransformer()),
-                          ('clf', MultiOutputClassifier(RandomForestClassifier()))])
+                          ('clf', MultiOutputClassifier(svm))
+                        ])
     
     parameters = {
-        'vect__tokenizer': (tokenize, tokenize_w_lem)        
-    }
+        'vect__tokenizer': ([tokenize]),
+        'vect__min_df': ([0.001]),
+        'clf__estimator__svm__C': ([1.0]), # svm
+        'clf__estimator__svm__kernel':(['linear']), # svm
+        }
     
     model = GridSearchCV(pipeline, 
-                      param_grid=parameters, 
-                      cv = 3, 
-                      #n_jobs = 2, 
-                      verbose = 3, 
-                      scoring = 'accuracy')
+                        param_grid=parameters, 
+                        cv = 5, 
+                        n_jobs = 1, 
+                        verbose = 3, 
+                        scoring = 'accuracy'
+                        )
     return model
 
 
-def evaluate_model(model, X_test, Y_test, category_names):
+def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
     Y_pred = model.predict(X_test)
-    accuracy = (Y_pred == Y_test).mean()
-    f1 = f1_score(Y_test, Y_pred, average = 'micro')    
+    Y_train_pred = model.predict(X_train)   
+     
     print("\nBest Parameters:", model.best_params_)
-    print("Accuracy:", accuracy)
-    print("F1 score:", f1)
-    print(classification_report(Y_test, Y_pred))
+    print("Test accuracy:", (Y_pred == Y_test).mean())
+    print("Test accuracy_multilabel:", (Y_pred == Y_test).all(axis = 1).mean())
+    print("Test F1 score:", f1_score(Y_test, Y_pred, average = 'micro'))
+    print("Train accuracy:", (Y_train_pred == Y_train).mean())
+    print("Train accuracy_multilabel:", (Y_train_pred == Y_train).all(axis = 1).mean())
+    print("Train F1 score:", f1_score(Y_train, Y_train_pred, average = 'micro'))
+    #print("Test report:\n", classification_report(Y_test, Y_pred))
+    #print("Train report:\n", classification_report(Y_train, Y_train_pred))
 
 
 def save_model(model, model_filepath):
-    model_filepath = pickle.dumps(model)
+    pickle.dump(model, open(model_filepath, "wb"))
 
 
 def main():
@@ -123,10 +132,10 @@ def main():
         model.fit(X_train, Y_train)
         
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        #save_model(model, model_filepath)
+        save_model(model, model_filepath)
 
         print('Trained model saved!')
 
