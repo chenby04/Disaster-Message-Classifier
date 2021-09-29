@@ -13,12 +13,16 @@ nltk.download(['punkt', 'wordnet','averaged_perceptron_tagger','stopwords'])
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier 
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import VotingClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, f1_score
 
-import pickle
+import dill
 
 
 def load_data(database_filepath):
@@ -95,23 +99,26 @@ def build_model():
         'feat_union__vect__tokenizer': (tokenize, tokenize_w_lem)        
     }
     '''
+    mnb = MultinomialNB()
+    lr=LogisticRegression()
+    rf = RandomForestClassifier()
     svm = SVC()   
     pipeline = Pipeline([
                           ('vect', CountVectorizer()),
                           ('tfidf', TfidfTransformer()),
-                          ('clf', MultiOutputClassifier(svm))
+                          ('clf', MultiOutputClassifier(mnb))
                         ])
     
     parameters = {
         'vect__tokenizer': ([tokenize]),
         'vect__min_df': ([0.001]),
-        'clf__estimator__svm__C': ([1.0]), # svm
-        'clf__estimator__svm__kernel':(['linear']), # svm
+        #'clf__estimator__C': ([1.0]), # svm
+        #'clf__estimator__kernel':(['linear']), # svm
         }
     
     model = GridSearchCV(pipeline, 
                         param_grid=parameters, 
-                        cv = 5, 
+                        cv = 2, 
                         n_jobs = 1, 
                         verbose = 3, 
                         scoring = 'accuracy'
@@ -146,16 +153,19 @@ def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
     #print("Train report:\n", classification_report(Y_train, Y_train_pred))
 
 
-def save_model(model, model_filepath):
+def save_model(model, tokenize, model_filepath):
     '''
-    Save the trained model as a pickle file
+    Wrap the trained model and the tokenizer function in a dictionary 
+    and dump them together as a pickle file
     Args: 
         model (sklearn): an ML model
+        tokenizer (func): the tokenizer function
         model_filepath (str): path and pickle filename for saving the model
     Returns:
         None
     '''
-    pickle.dump(model, open(model_filepath, "wb"))
+    with open(model_filepath, 'wb') as out_strm: 
+        dill.dump([model, tokenize], out_strm)
 
 
 def main():
@@ -179,7 +189,7 @@ def main():
         evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+        save_model(model, tokenize, model_filepath)
 
         print('Trained model saved!')
 

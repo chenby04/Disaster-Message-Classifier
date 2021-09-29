@@ -15,40 +15,19 @@ from nltk.stem.porter import PorterStemmer
 nltk.download(['punkt', 'wordnet','averaged_perceptron_tagger','stopwords'])
 
 from plotly.graph_objs import Bar
-import joblib
+import dill
 from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
 
-def tokenize(text):
-    '''
-    Tokenize the text by removing puctuation, normalizing case, splitting by space, removing stop words, 
-    lemmatizing, and stemming
-    Args:
-        text (str): a message 
-    Returns:
-        tokens (list of str): tokens
-    '''
-    # replace punctuations with space and normalize all letters
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
-    
-    # tokenize 
-    tokens = word_tokenize(text)  
-    
-    # lemmatize, stem and remove stop words
-    stop_words = stopwords.words("english")
-    lemmatizer = WordNetLemmatizer()
-    stemmer = PorterStemmer()
-    tokens = [stemmer.stem(lemmatizer.lemmatize(word)) for word in tokens if word not in stop_words]
-    return tokens
-
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('messages', engine)
 
-# load model
-model = joblib.load("../models/classifier.pk")
+# load model and tokenize function
+with open("../models/classifier.pkl", 'rb') as in_strm:
+    model, tokenize = dill.load(in_strm)
 
 
 # index webpage displays cool visuals and receives user input text for model
