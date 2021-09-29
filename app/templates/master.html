@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    <!-- Font CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans:wght@100;200;300;400&display=swap" rel="stylesheet">
+    <style>
+    .Roboto100 {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 100;
+    }
+    .Roboto300 {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 300;
+    }
+    .Roboto500 {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 500;
+    }
+    </style>
+    
+
+    <!-- Title -->
+    <title>Disaster Response Classifier</title>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <a href="https://www.udacity.com/course/data-scientist-nanodegree--nd025" class="navbar-text text-light mb-0 h5 Roboto100">Made with Udacity</a>
+    </nav>
+    
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="text-center Roboto300">Disaster Message Classifier</h1>
+            <p class="text-center Roboto100 h5 mb-4">Analyzing messages for quick disaster response</p>
+            <form action="/go" method="get">
+                <div class="row">
+                    <div class="col-10">
+                        <input type="text" class="form-control Roboto100" name="query" placeholder="Enter a message to classify">
+                    </div>              
+                    <div class="col-1">
+                        <button type="submit" class="btn btn-secondary Roboto300">Classify</button>
+                    </div>
+                </div>
+            </form>       
+        </div>
+    </div>
+
+    <div class="container">
+        {% block message %}{% endblock %}
+        
+        {% block classification %}
+            <div >
+                <h3 class="text-center Roboto300">Overview of Training Dataset</h3>
+            </div>
+        {% endblock %}
+
+        {% for id in ids %}
+            <div id="{{id}}"></div>
+        {% endfor %}
+    </div>
+
+    <script type="text/javascript">
+        const graphs = {{graphJSON | safe}};
+        const ids = {{ids | safe}};
+        for(let i in graphs) {
+            Plotly.plot(ids[i], graphs[i].data, graphs[i].layout);
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+{% extends "master.html" %}
+
+{% block message %}
+    <p class="text-center h4 Roboto100 mb-4"><i>"{{query}}"</i></p>
+{% endblock %}
+
+{% block classification %}
+    {% for category, classification in classification_result.items() %}
+        {% if loop.index % 4 == 1 %}
+        <div class="row p-1">
+        {% endif %}
+            <div class="col-3">
+            {% if classification == 1 %}
+                <button type="button" class="btn btn-success Roboto100" disabled>{{category.replace('_', ' ').title()}}</button>
+            {% else %}
+                <button type="button" class="btn btn-outline-secondary Roboto100" disabled>{{category.replace('_', ' ').title()}}</button>
+            {% endif %}
+            </div>
+        {% if loop.index % 4 == 0 %}
+        </div>
+        {% endif %}
+    {% endfor %}
+
+{% endblock %}

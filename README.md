@@ -16,7 +16,7 @@
 ## About The Project
 When diaster happens, people rely on social media and text messages to request for help. If these messages can be processed in a timely and precise manner, there is a higher chance that people with needs can be connected to the appropriate disaster relief agency.
 
-Inspired by this need, this project trains a ***supervised machine learning model*** to automatically process diaster messages and classify people's needs into 36 categories, such as "clothing", "food", and "shelter". The training dataset is a set of real messages collected following diasters, where each message has been labeled with one or more classes of needs. This project also builds a ***web application*** under the Flask framework, which allows an emergency worker to input a message and get classification results instantly. 
+Inspired by this need, this project trains a ***supervised machine learning model*** to automatically process diaster messages and classify people's needs into multiple categories, such as "clothing", "food", and "shelter". The training dataset is a set of real messages collected following diasters, where each message has been labeled with one or more classes of needs. This project also builds a ***web application*** under the Flask framework, which allows an emergency worker to input a message and get classification results instantly. 
 
  
 ## Getting Started
@@ -32,7 +32,7 @@ Inspired by this need, this project trains a ***supervised machine learning mode
    ```
    disaster_message_classifier/
     - app/
-    | - template/
+    | - templates/
     | |- master.html  # main page of web app
     | |- go.html  # classification result page of web app
     |- run.py  # Flask file that runs app
