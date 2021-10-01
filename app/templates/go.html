@@ -1,11 +1,13 @@
 {% extends "master.html" %}
 
+<!-- Display the message input by user -->>
 {% block message %}
-    <p class="text-center h4 Roboto100 mb-4"><i>"{{query}}"</i></p>
+    <p class="text-center h3 Roboto100 mb-4"><i>"{{query}}"</i></p>
 {% endblock %}
 
+<!-- Display the classification results -->
 {% block classification %}
-    {% for category, classification in classification_result.items() %}
+    {% for category, classification in classification_results.items() %}
         {% if loop.index % 4 == 1 %}
         <div class="row p-1">
         {% endif %}

@@ -118,7 +118,7 @@ def build_model():
     
     model = GridSearchCV(pipeline, 
                         param_grid=parameters, 
-                        cv = 2, 
+                        cv = 5, 
                         n_jobs = 1, 
                         verbose = 3, 
                         scoring = 'accuracy'
@@ -153,19 +153,20 @@ def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
     #print("Train report:\n", classification_report(Y_train, Y_train_pred))
 
 
-def save_model(model, tokenize, model_filepath):
+def save_model(model, category_names, tokenize, model_filepath):
     '''
     Wrap the trained model and the tokenizer function in a dictionary 
     and dump them together as a pickle file
     Args: 
-        model (sklearn): an ML model
+        model (sklearn): an multi-label ML model
+        category_names: labels of the model
         tokenizer (func): the tokenizer function
         model_filepath (str): path and pickle filename for saving the model
     Returns:
         None
     '''
     with open(model_filepath, 'wb') as out_strm: 
-        dill.dump([model, tokenize], out_strm)
+        dill.dump([model, category_names, tokenize], out_strm)
 
 
 def main():
@@ -189,7 +190,7 @@ def main():
         evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, tokenize, model_filepath)
+        save_model(model, category_names, tokenize, model_filepath)
 
         print('Trained model saved!')
 
