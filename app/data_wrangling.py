@@ -42,21 +42,20 @@ top_10_tokens,top_10_tokens_count = list(zip(*top_10_tokens_tuple))
 
 def return_graphs():
     # graph 1 - sample count for each category
-    graph1 = dict(
-                    data =  [
-                        Bar(
-                            x = list(category_distribution.index),
-                            y = category_distribution.values
-                        )
-                    ],
-                    layout = {
-                        'title': 'Distribution of Sample Categories',
-                        "titlefont": {"size": 18},
-                        'yaxis': {
-                            'title': "Sample Count"
-                        },
-                    }
-                )
+    graph1 = {
+                'data': [
+                    Bar(
+                        x = list(category_distribution.index),
+                        y = category_distribution.values
+                    )
+                ],
+                'layout': {
+                    'yaxis': {
+                        'title': "Message Count"
+                    },
+                    'margin':{'l':100, 'r':100, 't':0, 'b':120}
+                }
+            }
 
     # graph 2 - sample count for each sample complexity (number of categories covered by each sample)
     graph2 = {
@@ -67,10 +66,13 @@ def return_graphs():
                     )
                 ],
                 'layout': {
-                    'title': 'Distribution of Sample Complexity (Number of Categories in Each Sample)',
-                    'yaxis': {
-                        'title': "Sample Count"
+                    'xaxis': {
+                        'title': "Message Complexity (# of Classes per Message)"
                     },
+                    'yaxis': {
+                        'title': "Message Count"
+                    },
+                    'margin':{'l':100, 'r':100, 't':0, 'b':50}
                 }
             }
 
@@ -80,17 +82,20 @@ def return_graphs():
                     Scatter(
                         mode = 'markers',
                         x = df['token_count'],
-                        y = df['label_count']
+                        y = df['label_count'],
                     )
                 ],
                 'layout': {
-                    'title': 'Token Count vs. Label Count',
                     'xaxis': {
-                        'title': "Token Count"
+                        'title': "Token Count",
+                        #'type': "log"
                     },
                     'yaxis': {
-                        'title': "Label Count"
+                        'title': "Class Count",
+                        #'type': "log"
                     },
+                    
+                    'margin':{'l':200, 'r':200, 't':0, 'b':50}
                 }
             }
 
@@ -103,10 +108,15 @@ def return_graphs():
                     )
                 ],
                 'layout': {
-                    'title': 'Top 10 Commonly Seen Tokens',
+                    # 'title': 'Top 10 Commonly Seen Tokens',
+                    'xaxis': {
+                        'title': "Token"
+                    },
                     'yaxis': {
                         'title': "Token Count"
                     },
+                    'bargap': 0.3,
+                    'margin':{'l':200, 'r':200, 't':0, 'b':50}
                 }
             }
 

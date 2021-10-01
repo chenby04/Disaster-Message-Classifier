@@ -44,7 +44,7 @@
     <div class="jumbotron">
         <div class="container">
             <h1 class="text-center Roboto300">Disaster Message Classifier</h1>
-            <h5 class="text-center Roboto100     mb-4">Analyzing messages for quick disaster response</h5>
+            <h5 class="text-center Roboto100 mb-4">Analyzing messages for quick disaster response</h5>
             <form action="/go" method="get">
                 <div class="row">
                     <div class="col-10">
@@ -63,17 +63,68 @@
         
         {% block classification %}
             <div>
-                <h3 class="text-center Roboto300 mb-3">Overview of Training Dataset</h3>
-            </div>
-            <div>
-                {% for id in ids %}
-                    <div class = "row border-bottom mb-5">
-                        <div class = "col-12">
-                            <div id="{{id}}"></div>
-                        _  
-                        </div>
+                <h3 class="text-center Roboto300 mb-5">Overview of Training Dataset</h3>
+                
+                <!-- graph 1 -->
+                <div class = "row border-bottom mb-5">
+                    <div class = "col mb-5">
+                        <p class="Roboto100">
+                            This web application was powered by a <span class = "Roboto300">supervised machine learning model</span>. 
+                            The model was trained on a dataset consisting of 26384 social media or text messages, collected following diasters. 
+                            Each message has been translated to English and labeled with zero or more classes, such as "clothing", "food", 
+                            or "shelter". In total 36 classes were defined, and the number of messages associated with each class is plotted 
+                            below.
+                        </p>
+                        <p class="Roboto100">
+                            The plot demonstrates a highly unequal class distribuion, known as <span class = "Roboto300">class imbalance</span>. 
+                            For example, the class "related" was tagged to over 20k messages, while the class "child_alone" was tagged to 
+                            none of the messages.
+                        </p>
+                        <div id="{{ids[0]}}"></div>
                     </div>
-                {% endfor %}
+                </div>
+
+                <!-- graph 2 -->
+                <div class = "row border-bottom mb-5">
+                    <div class = "col mb-5">
+                        <p class="Roboto100">
+                            As mentioned above, each message was labeled with zero or more classes. Here I define 
+                            <span class = "Roboto300">message complexity</span> as the number of classes associated with each message, 
+                            and plot the distribution of message complexity below. The plot shows that over 6000 messages do not belong 
+                            to any class; majority of messages are associated with 1-10 classes; and in an extreme case, the message
+                            is associated with 27 classes.
+                        </p>
+                        <div id="{{ids[1]}}" ></div>
+                    </div>
+                </div>
+
+                <!-- graph 3 -->
+                <div class = "row border-bottom mb-5">
+                    <div class = "col mb-5">
+                        <p class="Roboto100">
+                            This variation in message complexity is largely due to the the variation in message length, because longer 
+                            messages natually contain more tokens. To demonstrate this, the figure below plots the count 
+                            of classes against the count of tokens for each message, where in general
+                            <span class = "Roboto300">messages with more tokens have more associated classes</span>. 
+                        </p>
+                        <div id="{{ids[2]}}"></div>
+                    </div>
+                </div>
+
+                <!-- graph 4 -->
+                <div class = "row border-bottom mb-5">
+                    <div class = "col mb-5">
+                        <p class="Roboto100">
+                            This dataset contains thousands of unique tokens, but which are the most popular tokens? Excluding 
+                            stop words, the <span class = "Roboto300">10 most common tokens</span> are shown below (tokens 
+                            "peopl", "pleas", and "earthquak" are missing an "e" at the end due to stemming). A lot of 
+                            these tokens are quite informative itself and can be directly linked to a pre-defined training class, 
+                            such as "water", "food", and "earthquak".
+                        </p>
+                        <div id="{{ids[3]}}"></div>
+                    </div>
+                </div>
+
             </div>
         {% endblock %}       
     </div>
@@ -84,16 +135,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-    <!-- 
-    <script type="text/javascript">
-        const graphs = {{graphJSON | safe}};
-        const ids = {{ids | safe}};
-        for(let i in graphs) {
-            Plotly.plot(ids[i], graphs[i].data, graphs[i].layout);
-        }
-    </script>
-    -->
 
     <script type="text/javascript">
         // plots the figure by id using Plotly
@@ -106,7 +147,7 @@
                 figures[i].data,
                 figures[i].layout || {});
         };
-  </script>
+    </script>
 
 </body>
 
