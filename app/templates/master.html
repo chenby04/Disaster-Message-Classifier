@@ -70,15 +70,15 @@
                     <div class = "col mb-5">
                         <p class="Roboto100">
                             This web application was powered by a <span class = "Roboto300">supervised machine learning model</span>. 
-                            The model was trained on a dataset consisting of 26384 social media or text messages, collected following diasters. 
+                            The model was trained on a dataset consisting of 26384 social media or text messages, all collected following diasters. 
                             Each message has been translated to English and labeled with zero or more classes, such as "clothing", "food", 
                             or "shelter". In total 36 classes were defined, and the number of messages associated with each class is plotted 
                             below.
                         </p>
                         <p class="Roboto100">
-                            The plot demonstrates a highly unequal class distribuion, known as <span class = "Roboto300">class imbalance</span>. 
-                            For example, the class "related" was tagged to over 20k messages, while the class "child_alone" was tagged to 
-                            none of the messages.
+                            The plot demonstrates a highly skewed class distribuion, known as <span class = "Roboto300">class imbalance</span>. 
+                            For example, major classes like `related` was tagged to over 20k messages while minor classes like `clothing` was 
+                            tagged to only 404 messages. More surprisingly, the class `child_alone` was tagged to none of the messages.
                         </p>
                         <div id="{{ids[0]}}"></div>
                     </div>
@@ -91,7 +91,7 @@
                             As mentioned above, each message was labeled with zero or more classes. Here I define 
                             <span class = "Roboto300">message complexity</span> as the number of classes associated with each message, 
                             and plot the distribution of message complexity below. The plot shows that over 6000 messages do not belong 
-                            to any class; majority of messages are associated with 1-10 classes; and in an extreme case, the message
+                            to any class; majority of messages are associated with 1-10 classes; and in an extreme case, a message
                             is associated with 27 classes.
                         </p>
                         <div id="{{ids[1]}}" ></div>

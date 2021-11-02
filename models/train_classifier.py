@@ -6,7 +6,6 @@ import re
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk import pos_tag
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 nltk.download(['punkt', 'wordnet','averaged_perceptron_tagger','stopwords'])
@@ -18,7 +17,6 @@ from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import VotingClassifier
-from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, f1_score
 
@@ -83,22 +81,6 @@ def build_model():
     Returns:
         model (GridSearchCV): an ML model for multi-label classification
     '''
-
-    '''
-    pipeline = Pipeline([
-                        ('feat_union', FeatureUnion([
-                            ('text_pipeline', Pipeline([
-                                ('vect', CountVectorizer()),
-                                ('tfidf', TfidfTransformer())
-                            ]))
-                            #,('starting_verb', StartingVerbExtractor())
-                        ])),
-                        ('clf', MultiOutputClassifier(RandomForestClassifier()))
-                    ])
-    parameters = {
-        'feat_union__vect__tokenizer': (tokenize, tokenize_w_lem)        
-    }
-    '''
     mnb = MultinomialNB()
     lr=LogisticRegression()
     rf = RandomForestClassifier()
@@ -106,14 +88,16 @@ def build_model():
     pipeline = Pipeline([
                           ('vect', CountVectorizer()),
                           ('tfidf', TfidfTransformer()),
-                          ('clf', MultiOutputClassifier(mnb))
+                          ('clf', MultiOutputClassifier(svm))
                         ])
     
     parameters = {
         'vect__tokenizer': ([tokenize]),
         'vect__min_df': ([0.001]),
-        #'clf__estimator__C': ([1.0]), # svm
-        #'clf__estimator__kernel':(['linear']), # svm
+        'clf__estimator__C': ([1.0]), # svm
+        'clf__estimator__kernel':(['linear']), # svm
+        'clf__estimator__class_weight':(['balanced', None]), # svm
+        #'clf__estimator__probability':([True, False]), # svm
         }
     
     model = GridSearchCV(pipeline, 
@@ -121,7 +105,7 @@ def build_model():
                         cv = 5, 
                         n_jobs = 1, 
                         verbose = 3, 
-                        scoring = 'accuracy'
+                        scoring = 'f1_macro'
                         )
     return model
 
@@ -145,10 +129,10 @@ def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
     print("\nBest Parameters:", model.best_params_)
     print("Test accuracy:", (Y_pred == Y_test).mean())
     print("Test accuracy_multilabel:", (Y_pred == Y_test).all(axis = 1).mean())
-    print("Test F1 score:", f1_score(Y_test, Y_pred, average = 'micro'))
+    print("Test F1 score:", f1_score(Y_test, Y_pred, average = 'macro'))
     print("Train accuracy:", (Y_train_pred == Y_train).mean())
     print("Train accuracy_multilabel:", (Y_train_pred == Y_train).all(axis = 1).mean())
-    print("Train F1 score:", f1_score(Y_train, Y_train_pred, average = 'micro'))
+    print("Train F1 score:", f1_score(Y_train, Y_train_pred, average = 'macro'))
     #print("Test report:\n", classification_report(Y_test, Y_pred))
     #print("Train report:\n", classification_report(Y_train, Y_train_pred))
 
@@ -171,7 +155,7 @@ def save_model(model, category_names, tokenize, model_filepath):
 
 def main():
     '''
-    Load spl dataset; split the data into training and testing; build and train a model; 
+    Load the sql dataset; split the data into training and testing; build and train a model; 
     evaluate the model using various metrics; save the model as a pickle file
     '''
     if len(sys.argv) == 3:

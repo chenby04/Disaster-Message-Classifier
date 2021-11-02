@@ -20,6 +20,10 @@ app = Flask(__name__)
 @app.route('/')
 @app.route('/index')
 def index():
+    '''
+    Render the home page where overview of the dataset is displayed
+    '''
+
     graphs = return_graphs()
     
     # encode plotly graphs in JSON
@@ -33,6 +37,10 @@ def index():
 # web page that handles user query and displays model results
 @app.route('/go')
 def go():
+    '''
+    Render the classification results according to user input
+    '''
+
     # save user input in query
     query = request.args.get('query', '') 
 

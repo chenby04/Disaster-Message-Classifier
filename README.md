@@ -55,6 +55,10 @@ Inspired by this need, this project trains a ***supervised machine learning mode
     - models/
     |- train_classifier.py # ML pipeline - supervised classification model
     |- classifier.pkl  # model saved as a pickle file
+
+    - requirements.txt # python packages are required to run the project
+    - overview.png # snapshot of web app
+    - results.png # snapshot of web app
     ```
 
 - Usage
@@ -77,12 +81,20 @@ Inspired by this need, this project trains a ***supervised machine learning mode
 
 ## Methods and Results
 - Data inspection and cleaning
-    The raw dataset consists of 26384 disaster messages, each labeled with zero or more of the 36 pre-defined classes. Upon inspection of the dataset, the class `child_alone` was excluded from training because it was not associated with any of the message, therefore untrainable. 206 messages were duplicated and also excluded from the training.
 
-- Machine learning model   
-    To prepare for the training, each message was tokenized and transformed. Steps of tokenization included removing punctuations, normalizing case, spliting words by space, removing stop words, lemmatizing and stemming. Steps of transformation included vectorization and TF-IDF transformation. 
+    The raw dataset consists of 26384 disaster messages, each labeled with zero or more of the 36 pre-defined classes. Upon inspection, 206 messages were duplicated and removed. The inspection also shows a highly skewed class distribution, where major classes like `aid_related` was tagged to over 10k messages while minor classes like `clothing` was tagged to only 404 messages. More surprisingly, the class `child_alone` was tagged to none of the messages and therefore becoming untrainable. This skewed class distribution is known as **class imbalance**, which needs to be taken into consideration during training, as discussed in the following section.
 
-    Five algorithms were evaluated for their multi-lable classification performance: naive Bayes, logistic regression, random forest, SVM, and a hard voting ensamble of the previous four. After hyperparameter-tuning with grid search, micro-f1 score was calculated for each algorithm and summarized below.
+- Machine learning model  
+
+    To prepare for the training, each message was tokenized and transformed. Steps of tokenization included removing punctuations, normalizing case, spliting words by space, removing stop words, lemmatizing, and stemming. Steps of transformation included vectorization and TF-IDF transformation. 
+ 
+    A multi-label classification model was trained. Because accuracy is not a good metric for imbalanced dataset, f1-score was used instead. Note that f1-score has different flavors : `macro f1-score` weighs each class equally whereas `micro f1-score` weighs each sample equally. If the goal of the training is to get as many samples correct as possible not favoring any class, micro is preferred, but if the goal of the training is to get minor classes correct as well, macro is preferred. In this project, macro was employed because I consider minor classes such as `clothing` equally or sometimes more important than major classes such as `aid_related`.
+
+    Five algorithms from the scikit-learn library were evaluated: naive Bayes, logistic regression, random forest, SVM, and a hard voting ensamble of the previous four. To combat the class imbalance, penalty was used in SVM. 
+
+    Grid search was employed to tune the hyperparameters for each algorithm, and results are summarized below.
+
+    
 
     | Algorithm           	|   Train   	|    Test    	| Train-Test 	|
     |---------------------	|:---------:	|:----------:	|:----------:	|
@@ -96,14 +108,13 @@ Inspired by this need, this project trains a ***supervised machine learning mode
 
 - Web application
     
-    The web application serves two purposes. First, it provides a graphical overview of the training data. Second, it employs the trained model to classify user input messages into pre-defined classes. 
-    ![Overview](Overview.png)
-    ![Results](Results.png)
+    The web application serves two purposes. First, it provides a graphical overview of the training data. Second, it implements the trained model to classify user input messages into pre-defined classes. 
+    ![Overview](overview.png)
+    ![Results](results.png)
+
 
 ## Limitations and Future Directions
-The training dataset is imbalanced: The 36 classes it defined have highly unequal class distribution. One extreme case is the class `child_alone`, which is not associated with any data entry of the dataset, therefore untrainable. Besides, the limited size of the dataset (26384 data entries) also restricts the performance of the model.
-
-To combat the imbalanced classes as well as the limited size of the dataset, future improvements might exploit pretrained word embeddings such as [Word2Vec](https://arxiv.org/pdf/1310.4546.pdf). The word embeddings were trained on large datasets, whose knowledge could potentially be transferred to small datasets to help understand their context. In addition to word embeddings, neural network (deep learning) can extract higher level features, which might also improve the classification performance.
+The training dataset is limited in size (26384 data entries), which restricts the performance of the model. Future improvements might exploit pretrained word embeddings such as [Word2Vec](https://arxiv.org/pdf/1310.4546.pdf). The word embeddings were trained on large datasets, whose knowledge could potentially be transferred to small datasets to help understand their context. In addition to word embeddings, neural network (deep learning) might also improve the classification performance by extracting higher level features.
 
 
 ## Acknowledgements

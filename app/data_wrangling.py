@@ -17,7 +17,7 @@ from nltk.stem.porter import PorterStemmer
 from collections import Counter
 
 
-# load data
+# load cleaned data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('messages', engine)
 
@@ -25,6 +25,7 @@ df = pd.read_sql_table('messages', engine)
 with open("../models/classifier.pkl", 'rb') as in_strm:
     model, category_names, tokenize = dill.load(in_strm)
 
+# prepare data for plotting
 # graph 1 - sample count for each category
 category_distribution = df.iloc[:,4:].sum(axis=0).sort_values(ascending=False)
 # graph 2 - sample count for each sample complexity (number of categories covered by each sample)
@@ -41,6 +42,9 @@ top_10_tokens,top_10_tokens_count = list(zip(*top_10_tokens_tuple))
 
 
 def return_graphs():
+    '''
+    Generate graphs using Plotly
+    '''
     # graph 1 - sample count for each category
     graph1 = {
                 'data': [
