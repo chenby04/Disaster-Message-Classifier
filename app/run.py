@@ -1,20 +1,16 @@
 import json
-
+import plotly
 from flask import Flask
 from flask import render_template, request
-
-import plotly
-
 import re
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
-
-from data_wrangling import return_graphs, model, category_names, tokenize
+from data_wrangling import tokenize
+from data_wrangling import return_graphs, model, category_names
 
 app = Flask(__name__)
-
 
 # index webpage that displays training dataset and receives user input text
 @app.route('/')

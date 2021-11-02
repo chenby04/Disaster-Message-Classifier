@@ -18,6 +18,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, f1_score
 
 import dill
@@ -36,7 +37,7 @@ def load_data(database_filepath):
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql('SELECT * FROM messages', engine)
     X = df['message'].values
-    # 'child_alone' not included in category_names becuase it is all-zero and therefore invalid for training
+    # 'child_alone' not included in category_names becuase it is all-zero and therefore INVALID for models such as SVM
     category_names = ['related', 'request', 'offer', 'aid_related', 'medical_help', \
                     'medical_products', 'search_and_rescue', 'security', 'military', \
                     'water', 'food', 'shelter', 'clothing', 'money', \
@@ -84,7 +85,13 @@ def build_model():
     mnb = MultinomialNB()
     lr=LogisticRegression()
     rf = RandomForestClassifier()
-    svm = SVC()   
+    svm = SVC()  
+    evc=VotingClassifier(estimators=[
+                                        ('mnb',mnb),
+                                        ('lr',lr),
+                                        ('rf',rf),
+                                        ('svm',svm)
+                                    ]) 
     pipeline = Pipeline([
                           ('vect', CountVectorizer()),
                           ('tfidf', TfidfTransformer()),
@@ -102,7 +109,7 @@ def build_model():
     
     model = GridSearchCV(pipeline, 
                         param_grid=parameters, 
-                        cv = 5, 
+                        cv = 2, 
                         n_jobs = 1, 
                         verbose = 3, 
                         scoring = 'f1_macro'
@@ -124,17 +131,8 @@ def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
         None
     '''
     Y_pred = model.predict(X_test)
-    Y_train_pred = model.predict(X_train)   
-     
     print("\nBest Parameters:", model.best_params_)
-    print("Test accuracy:", (Y_pred == Y_test).mean())
-    print("Test accuracy_multilabel:", (Y_pred == Y_test).all(axis = 1).mean())
-    print("Test F1 score:", f1_score(Y_test, Y_pred, average = 'macro'))
-    print("Train accuracy:", (Y_train_pred == Y_train).mean())
-    print("Train accuracy_multilabel:", (Y_train_pred == Y_train).all(axis = 1).mean())
-    print("Train F1 score:", f1_score(Y_train, Y_train_pred, average = 'macro'))
-    #print("Test report:\n", classification_report(Y_test, Y_pred))
-    #print("Train report:\n", classification_report(Y_train, Y_train_pred))
+    print("Test report:\n", classification_report(Y_test, Y_pred, target_names = category_names))
 
 
 def save_model(model, category_names, tokenize, model_filepath):

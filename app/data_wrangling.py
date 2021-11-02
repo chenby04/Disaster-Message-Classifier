@@ -1,9 +1,8 @@
 import pandas as pd
-
-from plotly.graph_objs import Bar, Scatter
-
 import dill
+from plotly.graph_objs import Bar, Scatter
 from sqlalchemy import create_engine
+from collections import Counter
 
 import re
 import nltk
@@ -12,9 +11,6 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
-
-
-from collections import Counter
 
 
 # load cleaned data
