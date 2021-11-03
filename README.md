@@ -1,4 +1,4 @@
-# disaster_message_classifier
+# Disaster-Message-Classifier
 
 <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
 <ol>
@@ -112,7 +112,7 @@ Inspired by this need, this project trains a ***supervised machine learning mode
 
 
 ## Discussion
-Dispite trying multiple models and using grid search to search for optimized parameters, the performance of the model was mediocre. Part of this can be attributed to the training dataset's limited size and imbalanced classes. However,*** to me what limited the performance most is the poor labeling quality of the training data ***. For example, one training data contains the message "How we can find food and water? we have people in many differents needs, and also for medicine at Fontamara 43 cite Tinante.", but it was labeled as negative for categories such as "medical_products", "water", and "food". In another example, the training message is "People from Dal blocked since Wednesday in Carrefour, we having water shortage, food and medical assistance.", but it was labeled as true for "earthquake". 
+Despite trying multiple models and using grid search to search for optimized parameters, the performance of the model was mediocre. Part of this can be attributed to the training dataset's limited size and imbalanced classes. However, ***to me, what limited the performance most is the poor labeling quality of the training data***. For example, one training data contains the message "How we can find food and water? we have people in many differents needs, and also for medicine at Fontamara 43 cite Tinante.", but it was labeled as negative for categories such as "medical_products", "water", and "food". In another example, the training message is "People from Dal blocked since Wednesday in Carrefour, we having water shortage, food and medical assistance.", but it was labeled as true for "earthquake". 
 
 No model can make up for bad data - especially in supervised learning. To truly improve the classification performance, the labels of the training data must be accurate and consistent. 
 
