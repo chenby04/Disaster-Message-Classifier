@@ -82,34 +82,59 @@ def build_model():
     Returns:
         model (GridSearchCV): an ML model for multi-label classification
     '''
-    mnb = MultinomialNB()
-    lr=LogisticRegression()
-    rf = RandomForestClassifier()
-    svm = SVC()  
-    evc=VotingClassifier(estimators=[
+    mnb = MultinomialNB() # Best Parameters: alpha: 0.1, fit_prior: False, min_df: 0.0005
+    lr = LogisticRegression() # Best Parameters: C: 1.0, class_weight: 'balanced', solver: 'lbfgs', min_df: 0.0005
+    rf = RandomForestClassifier() # Best Parameters: class_weight: 'balanced', max_depth: None, min_samples_leaf: 4, n_estimators: 200, min_df: 0.001
+    svm = SVC() # Best Parameters: C: 0.3, class_weight: 'balanced', kernel: 'rbf', min_df: 0.001
+    evc = VotingClassifier(estimators=[
                                         ('mnb',mnb),
                                         ('lr',lr),
                                         ('rf',rf),
                                         ('svm',svm)
                                     ]) 
     pipeline = Pipeline([
-                          ('vect', CountVectorizer()),
+                          ('vect', CountVectorizer(tokenizer = tokenize)),
                           ('tfidf', TfidfTransformer()),
-                          ('clf', MultiOutputClassifier(svm))
+                          ('clf', MultiOutputClassifier(rf))
                         ])
     
     parameters = {
-        'vect__tokenizer': ([tokenize]),
-        'vect__min_df': ([0.001]),
-        'clf__estimator__C': ([1.0]), # svm
-        'clf__estimator__kernel':(['linear']), # svm
-        'clf__estimator__class_weight':(['balanced', None]), # svm
-        #'clf__estimator__probability':([True, False]), # svm
+        'vect__min_df': ([0.0005, 0.001, 0.005]), # vect
+
+        #'clf__estimator__alpha': ([0.1, 0.5, 1.0]), # mnb
+        #'clf__estimator__fit_prior': ([True, False]), # mnb
+
+        #'clf__estimator__C': ([0.5, 1.0, 2.0]),# lr
+        #'clf__estimator__solver':(['liblinear','lbfgs']),# lr
+        #'clf__estimator__class_weight':(['balanced']), # lr
+
+        'clf__estimator__n_estimators':([100, 200]), # rf
+        'clf__estimator__max_depth':([50, None]), # rf
+        'clf__estimator__min_samples_leaf':([1,4]), # rf
+        'clf__estimator__class_weight':(['balanced']), # rf
+
+        #'clf__estimator__C': ([0.1, 0.3, 0.5, 1.0]), # svm
+        #'clf__estimator__kernel':(['linear','rbf']), # svm
+        #'clf__estimator__class_weight':(['balanced']), # svm 
+
+        #'vect__min_df': ([0.001]), # evc - vect
+        #'clf__estimator__mnb__alpha': ([0.1]), # evc - mnb
+        #'clf__estimator__mnb__fit_prior': ([False]), # evc - mnb
+        #'clf__estimator__lr__C': ([1.0]),# evc - lr
+        #'clf__estimator__lr__solver':(['liblinear']),# evc - lr
+        #'clf__estimator__lr__class_weight':(['balanced']), # evc - lr 
+        #'clf__estimator__rf__n_estimators':([200]), # evc - rf
+        #'clf__estimator__rf__max_depth':([None]), # evc - rf
+        #'clf__estimator__rf__min_samples_leaf':([4]), # evc - rf
+        #'clf__estimator__rf__class_weight':(['balanced']), # evc - rf
+        #'clf__estimator__svm__C': ([0.3]), # evc - svm
+        #'clf__estimator__svm__kernel':(['rbf']), # evc - svm
+        #'clf__estimator__svm__class_weight':(['balanced']), # evc - svm          
         }
     
     model = GridSearchCV(pipeline, 
                         param_grid=parameters, 
-                        cv = 2, 
+                        cv = 3, 
                         n_jobs = 1, 
                         verbose = 3, 
                         scoring = 'f1_macro'
@@ -131,7 +156,13 @@ def evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names):
         None
     '''
     Y_pred = model.predict(X_test)
+    Y_train_pred = model.predict(X_train)   
+     
     print("\nBest Parameters:", model.best_params_)
+
+    print("Train macro f1 score:", f1_score(Y_train, Y_train_pred, average = 'macro'))
+    print("Test macro f1 score:", f1_score(Y_test, Y_pred, average = 'macro'))
+
     print("Test report:\n", classification_report(Y_test, Y_pred, target_names = category_names))
 
 
@@ -167,13 +198,12 @@ def main():
         
         print('Training model...')
         model.fit(X_train, Y_train)
-        
+
         print('Evaluating model...')
         evaluate_model(model, X_train, Y_train, X_test, Y_test, category_names)
-
+        
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, category_names, tokenize, model_filepath)
-
         print('Trained model saved!')
 
     else:
