@@ -95,7 +95,7 @@ def build_model():
     pipeline = Pipeline([
                           ('vect', CountVectorizer(tokenizer = tokenize)),
                           ('tfidf', TfidfTransformer()),
-                          ('clf', MultiOutputClassifier(rf))
+                          ('clf', MultiOutputClassifier(lr))
                         ])
     
     parameters = {
@@ -104,18 +104,18 @@ def build_model():
         #'clf__estimator__alpha': ([0.1, 0.5, 1.0]), # mnb
         #'clf__estimator__fit_prior': ([True, False]), # mnb
 
-        #'clf__estimator__C': ([0.5, 1.0, 2.0]),# lr
-        #'clf__estimator__solver':(['liblinear','lbfgs']),# lr
-        #'clf__estimator__class_weight':(['balanced']), # lr
+        'clf__estimator__C': ([0.5, 1.0, 2.0]),# lr
+        'clf__estimator__solver':(['liblinear']),# lr
+        'clf__estimator__class_weight':(['balanced',None]), # lr
 
-        'clf__estimator__n_estimators':([100, 200]), # rf
-        'clf__estimator__max_depth':([50, None]), # rf
-        'clf__estimator__min_samples_leaf':([1,4]), # rf
-        'clf__estimator__class_weight':(['balanced']), # rf
+        #'clf__estimator__n_estimators':([100, 200]), # rf
+        #'clf__estimator__max_depth':([50, None]), # rf
+        #'clf__estimator__min_samples_leaf':([1,4]), # rf
+        #'clf__estimator__class_weight':(['balanced',None]), # rf
 
         #'clf__estimator__C': ([0.1, 0.3, 0.5, 1.0]), # svm
         #'clf__estimator__kernel':(['linear','rbf']), # svm
-        #'clf__estimator__class_weight':(['balanced']), # svm 
+        #'clf__estimator__class_weight':(['balanced',None]), # svm 
 
         #'vect__min_df': ([0.001]), # evc - vect
         #'clf__estimator__mnb__alpha': ([0.1]), # evc - mnb
